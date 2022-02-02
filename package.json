@@ -1,0 +1,28 @@
+{
+  "name": "company-backend",
+  "version": "1.0.0",
+  "description": "Softagram pre-assignment",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmokki/company-backend.git"
+  },
+  "author": "Teemu Pesonen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tpmokki/company-backend/issues"
+  },
+  "homepage": "https://github.com/tpmokki/company-backend#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "axios": "^0.25.0",
+    "express": "^4.17.2"
+  }
+}
