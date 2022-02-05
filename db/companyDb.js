@@ -35,7 +35,7 @@ const initializeDatabase = () => {
 
 const fetchCompanyByBusinessId = (businessId) => {
   return new Promise((resolve, reject) => {
-    const sql = `SELECT c.business_id, c.name, c.phone, c.website, 
+    const sql = `SELECT c.business_id, c.name, c.phone, c.website, c.address_id, 
     c.lastModified, a.street, a.postCode, a.city FROM company c JOIN address a
     ON c.address_id = a.address_id WHERE c.business_id = ?`
     const params = [businessId]
@@ -47,7 +47,8 @@ const fetchCompanyByBusinessId = (businessId) => {
         const result = !res ? null : {
           business_id: res.business_id,
           name: res.name,
-          address: { 
+          address: {
+            id: res.address_id, 
             street: res.street, 
             postCode: res.postCode, 
             city: res.city 
@@ -94,6 +95,76 @@ const addCompanyDetails = (business_id, name, address_id, phone, website) => {
   })
 }
 
+const updateAddress = (address, addressId) => {
+  return new Promise((resolve, reject) => {
+    let sql = `UPDATE address SET `
+    let params = []
+    const lastModified = Date.now()
+
+    if (address.street) {
+      sql += `street = ?, `
+      params.push(address.street)
+    }
+
+    if (address.postCode) {
+      sql += `postCode = ?, `
+      params.push(address.postCode)
+    }
+
+    if (address.city) {
+      sql += `city = ?, `
+      params.push(address.city)
+    }
+
+    sql += `lastModified = ? `
+    sql += `WHERE address_id = ?`
+    params.push(lastModified, addressId)
+
+    db.run(sql, params, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+const updateCompany = (company, businessId) => {
+  return new Promise((resolve, reject) => {
+    let sql = `UPDATE company SET `
+    let params = []
+    const lastModified = Date.now()
+
+    if (company.name) {
+      sql += `name = ?, `
+      params.push(company.name)
+    }
+
+    if (company.phone) {
+      sql += `phone = ?, `
+      params.push(company.phone)
+    }
+
+    if (company.website) {
+      sql += `website = ?, `
+      params.push(company.website)
+    }
+
+    sql += `lastModified = ? `
+    sql += `WHERE business_id = ?`
+    params.push(lastModified, businessId)
+
+    db.run(sql, params, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
 const existsCompany = (businessId) => {
   return fetchCompanyByBusinessId(businessId)
     .then(result => result !== null)
@@ -101,5 +172,6 @@ const existsCompany = (businessId) => {
 
 module.exports = { 
   initializeDatabase, fetchCompanyByBusinessId, 
-  addCompanyDetails, addAddress, existsCompany 
+  addCompanyDetails, addAddress, existsCompany,
+  updateAddress, updateCompany 
 }

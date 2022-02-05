@@ -10,16 +10,16 @@ const getByBusinessId = async (req, res) => {
     await db.initializeDatabase()
     const response = await axios.get(url)
     let rawData = response.data.results
-    let companyData = {}
+    let sourceData = {}
 
     if (rawData.length > 0) {
-      companyData = companyObjectFromRawData(rawData[0])
+      sourceData = companyObjectFromRawData(rawData[0])
     } else {
       res.status(404).json({ error: 'Not Found' })
     }
     
-    let { street, postCode, city } = companyData.address
-    let { business_id, name, phone, website } = companyData
+    let { street, postCode, city } = sourceData.address
+    let { business_id, name, phone, website } = sourceData.company
     let existsCompany = await db.existsCompany(businessId)
     
     if (!existsCompany) {
@@ -28,7 +28,24 @@ const getByBusinessId = async (req, res) => {
     }
 
     let companyFromDb = await db.fetchCompanyByBusinessId(businessId)
-    let responseData = {...companyFromDb, address: addressStringFromObject(companyFromDb.address)}
+    let addressDiff = getDifferenceObject(sourceData.address, companyFromDb.address)
+    
+    if (addressDiff) {
+      await db.updateAddress(addressDiff, companyFromDb.address.id)
+    }
+
+    let companyDiff = getDifferenceObject(sourceData.company, companyFromDb)
+
+    if (companyDiff) {
+      await db.updateCompany(companyDiff, businessId)
+    }
+
+    companyFromDb = await db.fetchCompanyByBusinessId(businessId)
+
+    let responseData = {
+      ...companyFromDb, 
+      address: addressStringFromObject(companyFromDb.address)
+    }
 
     res.status(200).json(responseData)
   } catch (err) {
@@ -54,13 +71,15 @@ const companyObjectFromRawData = (data) => {
     })[0]
   let phone = data.contactDetails.find(c => !c.endDate && c.type === 'Mobile phone').value
   let website = data.contactDetails.find(c => !c.endDate && c.type === 'Website address').value
-  
+
   return {
-    business_id,
-    name,
-    address,
-    phone,
-    website
+    company: {
+      business_id,
+      name,
+      phone,
+      website
+    },
+    address
   }
 }
 
@@ -71,6 +90,21 @@ const addressStringFromObject = (addressObj) => {
   city = addressObj.city.charAt(0) + addressObj.city.slice(1).toLowerCase()
 
   return `${street}, ${postCode} ${city}`
+}
+
+// Helper for updating local copy of information if source data has changed
+// Returns new object having only fields whose value differs and that value of new
+// Object will be from objA. Keys of the abjA and objB must be similar.
+const getDifferenceObject = (objA, objB) => {
+  let diff = {}
+
+  for (const prop in objA) {
+    if (objA[prop] !== objB[prop]) {
+      diff[prop] = objA[prop]
+    }
+  }
+
+  return diff
 }
 
 module.exports = { getByBusinessId }
