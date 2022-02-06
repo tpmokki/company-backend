@@ -1,4 +1,4 @@
-const PORT = 3001
+const PORT = 8000
 const dbFilePath = process.env.NODE_ENV === 'test'
   ? './companyTEST_DB.db'
   : './companyDB.db'
