@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3')
-const db = new sqlite3.Database('./companyDB.db')
+const config = require('../utils/config')
+const db = new sqlite3.Database(config.dbFilePath)
 
 const initializeDatabase = () => {
   return new Promise((resolve, reject) => {
@@ -33,11 +34,27 @@ const initializeDatabase = () => {
   })
 }
 
+// mainly for testing
+const clearDatabase = () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(`DELETE FROM address`)
+        .run(`DELETE FROM company`, err => {
+          if (err) {
+            reject({ type: 'sql', error: err })
+          } else {
+            resolve()
+          }
+        })
+    })
+  })
+}
+
 const fetchCompanyByBusinessId = (businessId) => {
   return new Promise((resolve, reject) => {
-    const sql = `SELECT c.business_id, c.name, c.phone, c.website, c.address_id, 
-    c.lastModified, a.street, a.postCode, a.city FROM company c JOIN address a
-    ON c.address_id = a.address_id WHERE c.business_id = ?`
+    const sql = `SELECT c.business_id, c.name, c.phone, c.website, c.address_id,
+    a.street, a.postCode, a.city FROM company c JOIN address a ON c.address_id = a.address_id 
+    WHERE c.business_id = ?`
     const params = [businessId]
 
     db.get(sql, params, (err, res) => {
@@ -51,12 +68,27 @@ const fetchCompanyByBusinessId = (businessId) => {
             id: res.address_id, 
             street: res.street, 
             postCode: res.postCode, 
-            city: res.city 
+            city: res.city
           },
           phone: res.phone,
-          website: res.website,
+          website: res.website
         }
         resolve(result)
+      }
+    })
+  })
+}
+
+const getLastModified = (businessId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT lastModified FROM company WHERE business_id = ?`
+    const params = [businessId]
+
+    db.get(sql, params, (err, res) => {
+      if (err) {
+        reject({ name: 'sql', message: err.message })
+      } else {
+        resolve(res.lastModified)
       }
     })
   })
@@ -173,5 +205,6 @@ const existsCompany = (businessId) => {
 module.exports = { 
   initializeDatabase, fetchCompanyByBusinessId, 
   addCompanyDetails, addAddress, existsCompany,
-  updateAddress, updateCompany 
+  updateAddress, updateCompany, clearDatabase,
+  getLastModified 
 }

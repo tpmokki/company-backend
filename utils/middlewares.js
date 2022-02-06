@@ -2,8 +2,8 @@ const errorHandler = (error, request, response, next) => {
   console.log("error", error)  
   if (error.name === 'sql') {
     return response
-    .status(500)
-    .send({ error: error.message })
+      .status(500)
+      .send({ error: error.message })
   } else if (error.response.status) {
     return response
       .status(error.response.status)

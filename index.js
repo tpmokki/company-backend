@@ -1,14 +1,9 @@
-const express = require('express')
-const companyRoutes = require('./routes/companyRoutes')
-const middleware = require('./utils/middlewares')
+const app = require('./app')
+const http = require('http')
+const config = require('./utils/config')
 
-const app = express()
-const PORT = 3001
+const server = http.createServer(app)
 
-app.use(companyRoutes)
-
-app.use(middleware.errorHandler)
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+server.listen(config.PORT, () => {
+  console.log(`Server running on port ${config.PORT}`)
 })
