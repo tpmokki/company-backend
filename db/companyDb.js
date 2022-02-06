@@ -24,7 +24,7 @@ const initializeDatabase = () => {
       db.run(first_sql)
         .run(second_sql, err => {
           if (err) {
-            reject(err)
+            reject({ type: 'sql', error: err })
           } else {
             resolve()
           }
@@ -42,7 +42,7 @@ const fetchCompanyByBusinessId = (businessId) => {
 
     db.get(sql, params, (err, res) => {
       if (err) {
-        reject(err)
+        reject({ name: 'sql', message: err.message })
       } else {
         const result = !res ? null : {
           business_id: res.business_id,
@@ -71,7 +71,7 @@ const addAddress = (street, postCode, city) => {
 
     stmt.run(params, (err) => {
       if (err) {
-        reject(err)
+        reject({ name: 'sql', message: err.message })
       } else {
         resolve(stmt.lastID)
       }
@@ -87,7 +87,7 @@ const addCompanyDetails = (business_id, name, address_id, phone, website) => {
 
     stmt.run(params, (err) => {
       if (err) {
-        reject(err)
+        reject({ name: 'sql', message: err.message })
       } else {
         resolve(stmt.lastID)
       }
@@ -122,7 +122,7 @@ const updateAddress = (address, addressId) => {
 
     db.run(sql, params, (err) => {
       if (err) {
-        reject(err)
+        reject({ name: 'sql', message: err.message })
       } else {
         resolve()
       }
@@ -157,7 +157,7 @@ const updateCompany = (company, businessId) => {
 
     db.run(sql, params, (err) => {
       if (err) {
-        reject(err)
+        reject({ name: 'sql', message: err.message })
       } else {
         resolve()
       }

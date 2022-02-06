@@ -2,7 +2,7 @@ const axios = require('axios')
 const db = require('../db/companyDb')
 const baseUrl = 'http://avoindata.prh.fi/bis/v1' 
 
-const getByBusinessId = async (req, res) => {
+const getByBusinessId = async (req, res, next) => {
   let businessId = req.params.businessId
   let url = `${baseUrl}/${businessId}`
 
@@ -49,14 +49,12 @@ const getByBusinessId = async (req, res) => {
 
     res.status(200).json(responseData)
   } catch (err) {
-    console.log("error", err)
-    let errorStatus = err.response.status
-    let errorText = err.response.statusText
-    
-    res.status(errorStatus).json({ error: errorText })
+    next(err)
   }
 }
 
+// Helpers
+// 
 const companyObjectFromRawData = (data) => {
   let business_id = data.businessId
   let name = data.name
@@ -94,7 +92,7 @@ const addressStringFromObject = (addressObj) => {
 
 // Helper for updating local copy of information if source data has changed
 // Returns new object having only fields whose value differs and that value of new
-// Object will be from objA. Keys of the abjA and objB must be similar.
+// object will be from objA. Keys of the objA and objB must be similar.
 const getDifferenceObject = (objA, objB) => {
   let diff = {}
 
