@@ -4,7 +4,11 @@ const errorHandler = (error, request, response, next) => {
     return response
       .status(500)
       .send({ error: error.message })
-  } else if (error.response.status) {
+  } else if (error.name === 'TypeError') {
+    return response
+      .status(500)
+      .send({ error: 'Internal server error' })
+  } else if (error.response && error.response.status) {
     return response
       .status(error.response.status)
       .send({ 

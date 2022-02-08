@@ -1,17 +1,28 @@
 const companyObjectFromRawData = (data) => {
-  let business_id = data.businessId
-  let name = data.name
+  let business_id = data.businessId || ''
+  let name = data.name || ''
   let address = data.addresses
     .filter(a => !a.endDate && a.type === 2) // type 2 is for postal address
     .map(a => {
       return {
-        street: a.street,
-        postCode: a.postCode,
-        city: a.city.charAt(0) + a.city.slice(1).toLowerCase()
+        street: a.street || '',
+        postCode: a.postCode || '',
+        city: a.city ? a.city.charAt(0) + a.city.slice(1).toLowerCase() : ''
       }
-    })[0]
-  let phone = data.contactDetails.find(c => !c.endDate && c.type === 'Mobile phone').value
-  let website = data.contactDetails.find(c => !c.endDate && c.type === 'Website address').value
+    })[0] 
+    
+  let phoneArr = data.contactDetails.filter(c => {
+    if (c.endDate) return false
+    if (c.type === 'Mobile phone' && c.value) {
+      return true
+    } else if (c.type === 'Telephone' && c.value) {
+      return true
+    }
+  })
+
+  let phone = phoneArr.length ? phoneArr[0].value : ''
+  let website = data.contactDetails
+    .find(c => !c.endDate && c.type === 'Website address').value || ''
 
   return {
     company: {
