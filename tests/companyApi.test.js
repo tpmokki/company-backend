@@ -1,10 +1,38 @@
+const nock = require('nock')
 const supertest = require('supertest')
 const app = require('../app')
 const db = require('../db/companyDb')
 
+const dbConn = db.getDbConnection()
 const api = supertest(app)
 const softagramId = '2532004-3'
 const baseUrl = `/api/company/${softagramId}`
+const mockedSoftagramResponse = require('./mocks/mockedSoftagramResponse')
+
+const clearDatabase = () => {
+  return new Promise((resolve, reject) => {
+    dbConn.serialize(() => {
+      dbConn.run(`DELETE FROM address`)
+        .run(`DELETE FROM company`, err => {
+          if (err) {
+            reject({ type: 'sql', error: err })
+          } else {
+            resolve()
+          }
+        })
+    })
+  })
+}
+
+beforeEach(() => {
+  nock('http://avoindata.prh.fi/bis/v1')
+    .get('/2532004-3')
+    .reply(200, mockedSoftagramResponse)
+})
+
+afterAll(() => {
+  nock.cleanAll()
+})
 
 describe('testing from perspective of api endpoint', () => {
   test('company details are returned as json', async () => {
@@ -59,7 +87,7 @@ describe('testing from perspective of database operation', () => {
   }
 
   test('data is added to database if not exists', async () => {
-    await db.clearDatabase()
+    await clearDatabase()
     await api.get(baseUrl)
     const fromDb = await db.fetchCompanyByBusinessId(softagramId)
 

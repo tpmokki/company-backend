@@ -1,6 +1,4 @@
-const sqlite3 = require('sqlite3')
-const config = require('../utils/config')
-const db = new sqlite3.Database(config.dbFilePath)
+const db = require('./db')
 
 const initializeDatabase = () => {
   return new Promise((resolve, reject) => {
@@ -24,22 +22,6 @@ const initializeDatabase = () => {
     db.serialize(() => {
       db.run(first_sql)
         .run(second_sql, err => {
-          if (err) {
-            reject({ type: 'sql', error: err })
-          } else {
-            resolve()
-          }
-        })
-    })
-  })
-}
-
-// mainly for testing
-const clearDatabase = () => {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      db.run(`DELETE FROM address`)
-        .run(`DELETE FROM company`, err => {
           if (err) {
             reject({ type: 'sql', error: err })
           } else {
@@ -205,6 +187,6 @@ const existsCompany = (businessId) => {
 module.exports = { 
   initializeDatabase, fetchCompanyByBusinessId, 
   addCompanyDetails, addAddress, existsCompany,
-  updateAddress, updateCompany, clearDatabase,
-  getLastModified 
+  updateAddress, updateCompany, getLastModified,
+  getDbConnection: () => db 
 }
