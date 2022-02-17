@@ -42,6 +42,20 @@ describe('testing from perspective of api endpoint', () => {
       .expect('Content-Type', /application\/json/)
   })
 
+  test('fails with statuscode 400 with invalid businessId', async () => {
+    await api
+      .get('/api/company/2532004-5')
+      .expect(400)
+
+    await api
+      .get('/api/company/2532gf4-5')
+      .expect(400)
+
+    await api
+      .get('/api/company/254-3')
+      .expect(400)
+  })
+
   test('fails with statuscode 404 with wrong url', async () => {
     await api
       .get('/api/wrongurl')

@@ -59,8 +59,38 @@ const getDifferenceObject = (objA, objB) => {
   return diff
 }
 
+const validateBusinessId = (businessId) => {
+  if (!businessId) return false
+  if (businessId.length !== 9) return false 
+
+  let numbers = [...businessId.substring(0,7)]
+  if (!numbers.every(c => '0123456789'.includes(c))) return false
+  if (businessId[7] !== '-') return false
+
+  const multipliers = [7, 9, 10, 5, 8, 4, 2]
+  let checkSum = 0
+  let checkMark = ''
+
+  for (i = 0; i < multipliers.length; i++) {
+      checkSum += multipliers[i] * numbers[i]
+  }
+
+  let remainder = checkSum % 11
+
+  if (remainder == 1) {
+      return false // businessId not in use if remainder is 1
+  } else if (remainder > 1 ) {
+      checkMark = 11 - remainder
+  } else {
+      checkMark = remainder
+  }
+
+  return Number(businessId[8]) === checkMark
+}
+
 module.exports = {
   companyObjectFromRawData,
   addressStringFromObject,
-  getDifferenceObject
+  getDifferenceObject,
+  validateBusinessId
 }

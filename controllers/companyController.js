@@ -6,7 +6,13 @@ const baseUrl = 'http://avoindata.prh.fi/bis/v1'
 const getByBusinessId = async (req, res, next) => {
   let businessId = req.params.businessId
   let url = `${baseUrl}/${businessId}`
-
+  
+  if (!helper.validateBusinessId(businessId)) {
+    return res.status(400).json({
+      error: 'Invalid path parameter businessId'
+    })
+  }
+    
   try {
     await db.initializeDatabase()
     const response = await axios.get(url)
